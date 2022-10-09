@@ -1,5 +1,4 @@
 library(tidyverse)
-library(rvest)
 library(RSelenium)
 library(glue)
 library(here)
