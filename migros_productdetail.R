@@ -19,19 +19,19 @@ driver <- rsDriver(browser = c("firefox"),
 remote_driver <- driver[["client"]]
 remote_driver$open()
 
-# Create a product page folder
-if (!dir.exists(here("data", "migros", "product_pages")))
-  dir.create(here("data", "migros", "product_pages"))
-if (!dir.exists(here("data", "migros", "product_pages", "fr")))
-  dir.create(here("data", "migros", "product_pages", "fr"))
-if (!dir.exists(here("data", "migros", "product_pages", "de")))
-  dir.create(here("data", "migros", "product_pages", "de"))
 
 # Function to create a new directory of the current date if it does not exist
 # yet
 create_current_date_dir <- function() {
+  # Create a product page folder
+  if (!dir.exists(here("data", "migros", "product_pages")))
+    dir.create(here("data", "migros", "product_pages"))
+  if (!dir.exists(here("data", "migros", "product_pages", today())))
+    dir.create(here("data", "migros", "product_pages", today()))
   if (!dir.exists(here("data", "migros", "product_pages", today(), "de")))
     dir.create(here("data", "migros", "product_pages", today(), "de"))
+  if (!dir.exists(here("data", "migros", "product_pages", today(), "fr")))
+    dir.create(here("data", "migros", "product_pages", today(), "fr"))
 }
 
 # Download a product detail page and store it
