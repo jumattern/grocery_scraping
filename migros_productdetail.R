@@ -34,13 +34,12 @@ download_product <- function(lang = "de", current_product_id) {
                               "{current_product_id}"))
   
   # Wait for the page to load...
-  Sys.sleep(6)
+  Sys.sleep(4)
   
   # Download the whole result page 
   whole_page <- remote_driver$getPageSource()
   
   # Store it
-  Sys.sleep(1)
   write.table(whole_page,
               file = here("data", "migros", "product_pages", lang, 
                           glue("{current_product_id}.html")),
