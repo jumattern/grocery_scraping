@@ -2,21 +2,20 @@ library(tidyverse)
 library(rvest)
 library(RSelenium)
 library(glue)
+library(here)
+library(conflicted)
+library(lubridate)
 
-
-# rvest::read_html("https://www.migros.ch/de/category/wein-bier-spirituosen/bier-cidre") %>% 
-#   html_text()
-# 
-# 
-# read_html("https://www.migros.ch/de/product/121321000000") %>% 
-#   html_nodes("script") 
-
+## Go through the specified product pages of https://www.migros.ch and 
+## download a list of product ids per category. A product id is e.g. 
+## "120983100000" and can be used to directly access a product detail page:
+## https://www.migros.ch/de/product/120983100000
 
 # https://thatdatatho.com/tutorial-web-scraping-rselenium/
 
 # Set up the browser
-driver <- rsDriver(browser = c("firefox"), 
-                   port = 4571L,)
+driver <- rsDriver(browser = c("firefox"),
+                   port = 4571L, )
 remote_driver <- driver[["client"]]
 remote_driver$open()
 
@@ -118,15 +117,12 @@ for (cat_idx in 1:length(categories)) {
   
 }
 
+# Unique product IDs
+result_prod %>% 
+  distinct(product_id) %>% 
+  nrow() #22618 (2022-10-09)
 
-
-
-
-
-
-
-
-
-
-
-
+# Save the file
+result_prod %>%  
+  write_rds(here("data", "migros", glue("product_ids_{today()}.rds")), 
+            compress = "xz")
