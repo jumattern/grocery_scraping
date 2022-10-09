@@ -27,6 +27,13 @@ if (!dir.exists(here("data", "migros", "product_pages", "fr")))
 if (!dir.exists(here("data", "migros", "product_pages", "de")))
   dir.create(here("data", "migros", "product_pages", "de"))
 
+# Function to create a new directory of the current date if it does not exist
+# yet
+create_current_date_dir <- function() {
+  if (!dir.exists(here("data", "migros", "product_pages", today(), "de")))
+    dir.create(here("data", "migros", "product_pages", today(), "de"))
+}
+
 # Download a product detail page and store it
 download_product <- function(lang = "de", current_product_id) {
   # Go to product overview page
@@ -39,15 +46,18 @@ download_product <- function(lang = "de", current_product_id) {
   # Download the whole result page 
   whole_page <- remote_driver$getPageSource()
   
+  # Create  new directory of the current date if needed
+  create_current_date_dir()
+  
   # Store it
   write.table(whole_page,
-              file = here("data", "migros", "product_pages", lang, 
+              file = here("data", "migros", "product_pages", today(), lang, 
                           glue("{current_product_id}.html")),
               quote = FALSE,
               col.names = FALSE,
               row.names = FALSE
   )
-
+  
 }
 
 
