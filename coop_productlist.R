@@ -57,6 +57,60 @@ check_if_element_exists <- function(remote_driver, element_class) {
 # https://www.coop.ch/de/lebensmittel/c/m_9753
 
 
+# Function to extract the title of the current product overview page as well 
+# as the hierarchy of it
+extract_title_hierarchy <- function() {
+  # Get the category title
+  cat_title <- NA
+  if (check_if_element_exists("spacing-bottom-lg-up-30")) {
+    cat_title <- remote_driver$findElement(using = "class", 
+                                           value = "spacing-bottom-lg-up-30")
+  } else {
+    cat_title <- remote_driver$findElement(using = "class", 
+                                           value = "cmsHeroImage-content-title")
+  }
+  
+  # Extract the HTML
+  cat_title <- cat_title$getElementAttribute("innerHTML") %>% 
+    unlist() %>% 
+    str_trim()
+  
+  # Hierarchy
+  cat_hierarchy <- remote_driver$findElement(using = "class", 
+                                             value = "spacing-top-15")
+  # Extract the HTML
+  cat_hierarchy <- cat_hierarchy$getElementAttribute("innerHTML") %>% 
+    unlist()
+  # Extract the numerical product ids of the selected page
+  category_lvl_0 <- cat_hierarchy %>%  
+    str_extract_all("(?<=a-udo-cat0=\\\"\\\">)(.*)(?=</span>)") %>% 
+    unlist() %>% 
+    str_trim() %>% 
+    # In level 0, first element is "Startseite", take only second element
+    nth(2)
+  category_lvl_1 <- cat_hierarchy %>%  
+    str_extract_all("(?<=a-udo-cat1=\\\"\\\">)(.*)(?=</span>)") %>% 
+    unlist() %>% 
+    str_trim()
+  category_lvl_2 <- cat_hierarchy %>%  
+    str_extract_all("(?<=a-udo-cat2=\\\"\\\">)(.*)(?=</span>)") %>% 
+    unlist() %>% 
+    str_trim()
+  category_lvl_3 <- cat_hierarchy %>%  
+    str_extract_all("(?<=a-udo-cat3=\\\"\\\">)(.*)(?=</span>)") %>% 
+    unlist() %>% 
+    str_trim()  
+  tibble(
+    category_lvl_0 = category_lvl_0, 
+    category_lvl_1 = if_else(length(category_lvl_1) != 0, category_lvl_1, 
+                             as.character(NA)), 
+    category_lvl_2 = if_else(length(category_lvl_2) != 0, category_lvl_2, 
+                             as.character(NA)),
+    category_lvl_3 = if_else(length(category_lvl_3) != 0, category_lvl_3, 
+                             as.character(NA)),
+    category_title = cat_title) 
+}
+
 # Init result object
 result_prod <- tibble()
 
@@ -74,9 +128,16 @@ for (category_id in 1:max_category_id) {
   remote_driver$navigate(glue("{product_list_url}"))
   # Wait for the page to load...
   Sys.sleep(10)
+  
+  
   # Download the products of the page
   result_prod <- result_prod %>%
-    bind_rows(download_product_ids())
+    bind_rows(
+      tibble(
+        extract_title_hierarchy(), 
+        download_product_ids()
+      )
+    )
   
   while (check_if_element_exists(remote_driver, "pagination__next")) {
     print("Asking for more products...")
@@ -89,8 +150,12 @@ for (category_id in 1:max_category_id) {
     
     # Download the products of the page
     result_prod <- result_prod %>%
-      bind_rows(download_product_ids())
-    
+      bind_rows(
+        tibble(
+          extract_title_hierarchy(), 
+          download_product_ids()
+        )
+      )
   }
   
   # Console status
