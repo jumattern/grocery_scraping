@@ -14,10 +14,10 @@ products_unique <- products %>%
 n_products <- nrow(products_unique)
 
 # Set up the browser
-driver <- rsDriver(browser = c("firefox"),
-                   port = 4572L, )
+driver <- rsDriver(browser = c("chrome"),
+                   port = 4578L, )
 remote_driver <- driver[["client"]]
-remote_driver$open()
+# remote_driver$open()
 
 
 # Function to create a new directory of the current date if it does not exist
@@ -32,6 +32,10 @@ create_current_date_dir <- function() {
     dir.create(here("data", "migros", "product_pages", today(), "de"))
   if (!dir.exists(here("data", "migros", "product_pages", today(), "fr")))
     dir.create(here("data", "migros", "product_pages", today(), "fr"))
+  if (!dir.exists(here("data", "migros", "product_pages", today(), "it")))
+    dir.create(here("data", "migros", "product_pages", today(), "it"))
+  if (!dir.exists(here("data", "migros", "product_pages", today(), "en")))
+    dir.create(here("data", "migros", "product_pages", today(), "en"))
 }
 
 # Download a product detail page and store it
@@ -62,7 +66,7 @@ download_product <- function(lang = "de", current_product_id) {
 
 
 # Loop through every product and download the result page
-for (prod_idx in 1:n_products) {
+for (prod_idx in 2735:n_products) {
   current_product_id <- products_unique$product_id[prod_idx]
   
   # Console status
@@ -72,5 +76,7 @@ for (prod_idx in 1:n_products) {
   # Download French and German product detail pages
   download_product(lang = "de", current_product_id)
   download_product(lang = "fr", current_product_id)
+  download_product(lang = "en", current_product_id)
+  download_product(lang = "it", current_product_id)
 }
 
