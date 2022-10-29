@@ -12,11 +12,11 @@ library(lubridate)
 
 # https://thatdatatho.com/tutorial-web-scraping-rselenium/
 
+# Load functions to set up Selenium browser and navigate with it
+source(here("selenium_functions.R"))
+
 # Set up the browser
-driver <- rsDriver(browser = c("firefox"),
-                   port = 4571L, )
-remote_driver <- driver[["client"]]
-remote_driver$open()
+browser <- get_browser()
 
 # All the categories that should be scraped
 categories <- c("health/glutenfrei", 
@@ -40,10 +40,10 @@ categories <- c("health/glutenfrei",
                 "bekleidung-accessoires")
 
 # Function to download a HTML category page with product IDs
-download_product_ids <- function() {
+download_product_ids <- function(browser) {
   # Search all the product list items
-  products <- remote_driver$findElement(using = "class", 
-                                        value = "ng-star-inserted")
+  products <- browser$findElement(using = "class", 
+                                  value = "ng-star-inserted")
   # Download the HTML
   products <- products$getElementAttribute("innerHTML")
   
@@ -60,19 +60,6 @@ download_product_ids <- function() {
                 product_id = product_ids))
 }
 
-# Helper function that returns a boolean indicating whether an element exists
-# or not
-check_if_element_exists <- function(remote_driver, element_class) {
-  suppressWarnings(suppressMessages(out <- tryCatch({
-    remote_driver$findElement(using = "class", value = element_class)
-    return(TRUE)
-  },
-  error = function(cond) {
-    return(FALSE)
-  })))
-  return(FALSE)
-}
-
 # Init result object
 result_prod <- tibble()
 
@@ -83,24 +70,23 @@ for (cat_idx in 1:length(categories)) {
   print(glue("Scraping {current_cat}..."))
   
   # Go to product overview page
-  remote_driver$navigate(glue("https://www.migros.ch/de/",
-                              # Some special categories without "category"
-                              # in the URL
-                              if_else(str_detect(current_cat, 
-                                                 "health|lifestyle"), 
-                                      "", 
-                                      "category/"), 
-                              "{current_cat}"))
-    # Wait for the page to load...
-  Sys.sleep(3)
+  # browser <- 
+  navigate_safely(browser, glue("https://www.migros.ch/de/",
+                                # Some special categories without "category"
+                                # in the URL
+                                if_else(str_detect(current_cat, 
+                                                   "health|lifestyle"), 
+                                        "", 
+                                        "category/"), 
+                                "{current_cat}"), wait_after = 3)
   
   # As long as there is a button "X more products", click it and get all 
   # products displayed before we download them
-  while (check_if_element_exists(remote_driver, "btn-view-more")) {
+  while (check_if_element_exists(browser, "btn-view-more")) {
     print("Asking for more products...")
     # Get the "more" button and click it
-    button_more <- remote_driver$findElement(using = "class", 
-                                             value = "btn-view-more")
+    button_more <- find_element_safely(browser, using = "class", 
+                                       value = "btn-view-more")
     button_more$clickElement() 
     
     # Wait for the page to load...
@@ -109,7 +95,7 @@ for (cat_idx in 1:length(categories)) {
   
   # Download the products of the page
   result_prod <- result_prod %>%
-    bind_rows(download_product_ids())
+    bind_rows(download_product_ids(browser))
   
   # Console status
   print(glue("Ended scraping of {current_cat}."))
