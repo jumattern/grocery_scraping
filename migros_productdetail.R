@@ -5,6 +5,12 @@ library(here)
 library(conflicted)
 library(lubridate)
 
+# Load functions to set up Selenium browser and navigate with it
+source(here("selenium_functions.R"))
+
+# Set up the browser
+browser <- get_browser()
+
 # Load all products
 products <- read_rds(here("data", "migros", "product_ids_2022-10-09.rds"))
 
@@ -12,13 +18,6 @@ products <- read_rds(here("data", "migros", "product_ids_2022-10-09.rds"))
 products_unique <- products %>% 
   distinct(product_id)
 n_products <- nrow(products_unique)
-
-# Set up the browser
-driver <- rsDriver(browser = c("chrome"),
-                   port = 4578L, )
-remote_driver <- driver[["client"]]
-# remote_driver$open()
-
 
 # Function to create a new directory of the current date if it does not exist
 # yet
@@ -41,14 +40,11 @@ create_current_date_dir <- function() {
 # Download a product detail page and store it
 download_product <- function(lang = "de", current_product_id) {
   # Go to product overview page
-  remote_driver$navigate(glue("https://www.migros.ch/{lang}/product/",                          
-                              "{current_product_id}"))
-  
-  # Wait for the page to load...
-  Sys.sleep(4)
+  navigate_safely(browser, glue("https://www.migros.ch/{lang}/product/",                          
+                                "{current_product_id}"), wait_after = 4)
   
   # Download the whole result page 
-  whole_page <- remote_driver$getPageSource()
+  whole_page <- browser$getPageSource()
   
   # Create  new directory of the current date if needed
   create_current_date_dir()
@@ -64,9 +60,8 @@ download_product <- function(lang = "de", current_product_id) {
   
 }
 
-
 # Loop through every product and download the result page
-for (prod_idx in 2735:n_products) {
+for (prod_idx in 1:n_products) { # seq_len(n_products)) { # 1:n_products) {
   current_product_id <- products_unique$product_id[prod_idx]
   
   # Console status
