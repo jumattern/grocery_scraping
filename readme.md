@@ -2,7 +2,7 @@
 
 Project to automatically scrape product information of large Swiss retailers like Coop, Migros, Denner etc. in order to build a comprehensive data base and track developments over time. 
 
-Browsing the webpages and executing JS is done with [RSelenium](https://cran.r-project.org/web/packages/RSelenium/RSelenium.pdf), parsing with [rvest](https://rvest.tidyverse.org/). 
+Browsing the webpages and executing JS is done with [RSelenium](https://github.com/ropensci/RSelenium), parsing with [rvest](https://rvest.tidyverse.org/). RSelenium required [Java](https://www.java.com/de/download/manual.jsp) being installed on the local machine. 
 
 *Work in progress*
 
