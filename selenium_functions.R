@@ -48,7 +48,7 @@ get_browser <- function(engine = "firefox",
             }
             # Sys.sleep(waiting_time)
           } else {
-            # Other error that port error
+            # Other error than port error
             print(glue("New error showed up: {driver}"))
             try_next_port <- FALSE
           }
@@ -58,8 +58,11 @@ get_browser <- function(engine = "firefox",
         }
         try_num <- try_num + 1
       }
+    } else {
+      # Other error, return the error message
+      return(driver)
     }
-  }
+  } 
   # Get client and return it
   driver_client <- driver[["client"]]
   # driver_client$open()

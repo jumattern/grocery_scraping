@@ -8,7 +8,7 @@ library(lubridate)
 # Load functions to set up Selenium browser and navigate with it
 source(here("selenium_functions.R"))
 
-# Set up the browser
+# Start up the browser and wait until ready
 browser <- get_browser()
 
 # Load all products
