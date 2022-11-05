@@ -76,9 +76,12 @@ parse_file <- function(file_path, file_name, lang_version) {
   # Product label(s), e.g. aha!, Swissness. Store semicolon-separated. 
   labels <- page %>% 
     html_elements("mo-product-detail-brand-labels") %>% 
-    html_elements(css = ".mat-tooltip-trigger") %>% 
+    html_elements("div") %>% 
+    # html_elements(css = ".mat-tooltip-trigger") %>% 
     as.character() %>% 
-    str_extract("(?<=alt=\")(.*)(?=\" data-fallback-src)") %>% 
+    str_extract_all(glue("(?<=alt=\")(.*)(?=\" data-fallback-src)|", 
+                         "(?<=class=\"text\">)(.*)(?=</span>)")) %>% 
+    unlist() %>% 
     paste(collapse = ";")
   if (labels == "NA")
     labels <- NA
@@ -173,7 +176,7 @@ for (scrape_date_idx in seq_len(length(scrape_dates))) {
     # For each product HTML (of this scraping date and language)
     for (prod_idx in seq_len(length(products))) {
       product_filename <- products[prod_idx]
-      # product_filename <- "130904900000.html"
+      # product_filename <- "130916800000.html"
       print(glue("Parsing {current_lang}/{scrape_date_dir} ({prod_idx}/", 
                  "{length(products)}): {product_filename}..."))
       # Put together the complete file path of the file to be parse
