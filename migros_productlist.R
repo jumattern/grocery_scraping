@@ -36,8 +36,9 @@ download_product_ids <- function(browser) {
 
 # Function to scroll to the bottom of the page 
 scroll_down_page <- function(browser) {
-  body <- browser$findElement("css", "body")
-  body$sendKeysToElement(list(key = "end"))
+  browser$executeScript("window.scrollTo(0,document.body.scrollHeight)")
+  # body <- browser$findElement("css", "body")
+  # body$sendKeysToElement(list(key = "end"))
 }
 
 # Set up the browser
@@ -86,10 +87,9 @@ for (cat_idx in 1:length(categories)) {
                                 "{current_cat}"), wait_after = 3)
   
   # Click away cookie message
-  button_cookies <- find_element_safely(browser, using = "class", 
-                                     value = ".mat-button-base")
-  # Click the more button
-  button_cookies$clickElement() 
+  buttons <- browser$findElements(using = "tag name", value = "button")
+  length(buttons)
+  buttons[[length(buttons)]]$clickElement() 
   
   # As long as there is a button "X more products", click it and get all 
   # products displayed before we download them
