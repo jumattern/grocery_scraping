@@ -77,7 +77,9 @@ find_element_safely <- function(browser, using = "class", value = "") {
     # Set up a new browser when it crashed
     msg <- as.character(cond)
     if (str_detect(msg, "Failed to connect to localhost") |
-        str_detect(msg, "A session is either terminated or not started")) {
+        str_detect(msg, "A session is either terminated or not started") |
+        str_detect(msg, "Failed to connect to localhost") |
+        str_detect(msg, "error")) {
       browser <- get_browser()
       # Some seconds for startup needed
       Sys.sleep(5)
