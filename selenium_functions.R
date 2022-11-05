@@ -20,14 +20,15 @@ setup_browser <- function(engine = "firefox", port = 4571L) {
 }
 
 # Function to return a Selenium browser on a new port 
-get_browser <- function(engine = "firefox", waiting_time = 30, 
+get_browser <- function(engine = "firefox", 
+                        # waiting_time = 30, 
                         max_tries = 20) {
   # Get the connection to the browser
   port <- 4571L
-  print(glue("Waiting for {waiting_time} seconds for startup..."))
+  # print(glue("Waiting for {waiting_time} seconds for startup..."))
   try_num <- 1
   driver <- setup_browser(engine = engine, port = port)
-  Sys.sleep(waiting_time)
+  # Sys.sleep(waiting_time)
   # If the port is already in use, take the next one until it works
   if (is.character(driver)) {
     print(glue("Problem encountered: {driver}"))
@@ -40,9 +41,12 @@ get_browser <- function(engine = "firefox", waiting_time = 30,
         if (is.character(driver)) {
           if (str_detect(driver, "is already in use")) {
             port <- as.integer(port + 1)
-            
             driver <- setup_browser(engine = engine, port = port)
-            Sys.sleep(waiting_time)
+            if (!is.character(driver)) {
+              # Successful connection, break
+              try_next_port <- FALSE
+            }
+            # Sys.sleep(waiting_time)
           } else {
             # Other error that port error
             print(glue("New error showed up: {driver}"))
