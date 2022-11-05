@@ -13,6 +13,33 @@ library(lubridate)
 # Load functions to set up Selenium browser and navigate with it
 source(here("selenium_functions.R"))
 
+# Function to download a HTML category page with product IDs
+download_product_ids <- function(browser) {
+  # Search all the product list items
+  products <- browser$findElement(using = "class", 
+                                  value = "ng-star-inserted")
+  # Download the HTML
+  products <- products$getElementAttribute("innerHTML")
+  
+  # Wait for the page to load...
+  Sys.sleep(3)
+  
+  # Extract the numerical product ids of the selected page
+  product_ids <- products %>%  
+    unlist() %>% 
+    str_extract_all("(?<=\\/de\\/product\\/)([0-9]*)(?=\\\")") %>% 
+    unlist()
+  
+  return(tibble(category = current_cat,
+                product_id = product_ids))
+}
+
+# Function to scroll to the bottom of the page 
+scroll_down_page <- function(browser) {
+  body <- browser$findElement("css", "body")
+  body$sendKeysToElement(list(key = "end"))
+}
+
 # Set up the browser
 browser <- get_browser()
 
@@ -37,26 +64,6 @@ categories <- c("health/glutenfrei",
                 "haus-hobby", 
                 "bekleidung-accessoires")
 
-# Function to download a HTML category page with product IDs
-download_product_ids <- function(browser) {
-  # Search all the product list items
-  products <- browser$findElement(using = "class", 
-                                  value = "ng-star-inserted")
-  # Download the HTML
-  products <- products$getElementAttribute("innerHTML")
-  
-  # Wait for the page to load...
-  Sys.sleep(3)
-  
-  # Extract the numerical product ids of the selected page
-  product_ids <- products %>%  
-    unlist() %>% 
-    str_extract_all("(?<=\\/de\\/product\\/)([0-9]*)(?=\\\")") %>% 
-    unlist()
-  
-  return(tibble(category = current_cat,
-                product_id = product_ids))
-}
 
 # Init result object
 result_prod <- tibble()
@@ -78,6 +85,12 @@ for (cat_idx in 1:length(categories)) {
                                         "category/"), 
                                 "{current_cat}"), wait_after = 3)
   
+  # Click away cookie message
+  button_cookies <- find_element_safely(browser, using = "class", 
+                                     value = ".mat-button-base")
+  # Click the more button
+  button_cookies$clickElement() 
+  
   # As long as there is a button "X more products", click it and get all 
   # products displayed before we download them
   while (check_if_element_exists(browser, "btn-view-more")) {
@@ -85,10 +98,23 @@ for (cat_idx in 1:length(categories)) {
     # Get the "more" button and click it
     button_more <- find_element_safely(browser, using = "class", 
                                        value = "btn-view-more")
+    # Scroll to the bottom
+    scroll_down_page(browser)
+    
+    # Click the more button
     button_more$clickElement() 
     
     # Wait for the page to load...
     Sys.sleep(3)
+    
+    # Scroll to the bottom
+    scroll_down_page(browser)
+    
+    # Wait for the page to load...
+    Sys.sleep(1)
+    
+    # Scroll to the bottom
+    scroll_down_page(browser)
   }
   
   # Download the products of the page

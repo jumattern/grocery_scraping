@@ -11,7 +11,7 @@ library(lubridate)
 # port configuration
 setup_browser <- function(engine = "chrome", 
                           chromever = "107.0.5304.18", 
-                          port = 4571L) {
+                          port = as.integer(sample(4000:5000, 1))) {
   driver <- tryCatch({
     rsDriver(browser = engine, port = port, 
              chromever = chromever)
@@ -25,10 +25,10 @@ setup_browser <- function(engine = "chrome",
 # Function to return a Selenium browser on a new port 
 get_browser <- function(engine = "chrome", 
                         chromever = "107.0.5304.18",
-                        waiting_time = 10,
+                        waiting_time = 0,
                         max_tries = 20) {
   # Get the connection to the browser
-  port <- 4671L
+  port <- as.integer(sample(4000:5000, 1))
   print(glue("Waiting for {waiting_time} seconds for startup..."))
   try_num <- 1
   driver <- setup_browser(engine = engine, port = port)
@@ -41,16 +41,18 @@ get_browser <- function(engine = "chrome",
       try_next_port <- TRUE
       # Try new ports until we reached the max. number of tries
       while (try_next_port & try_num <= max_tries) {
-        print(glue("Try {try_num}: Trying another port ({port + 1})..."))
         if (is.character(driver)) {
           if (str_detect(driver, "is already in use")) {
             port <- as.integer(port + 1)
+            print(glue("Try {try_num}: Trying another port ({port})..."))
             driver <- setup_browser(engine = engine, port = port)
             if (!is.character(driver)) {
               # Successful connection, break
               try_next_port <- FALSE
+            } else {
+              print(glue("Still getting error: {driver}"))
+              Sys.sleep(waiting_time)
             }
-            Sys.sleep(waiting_time)
           } else {
             # Other error than port error
             print(glue("New error showed up: {driver}"))
@@ -58,6 +60,7 @@ get_browser <- function(engine = "chrome",
           }
         } else {
           # Successful connection, break
+          print("Successful connection!")
           try_next_port <- FALSE
         }
         try_num <- try_num + 1
