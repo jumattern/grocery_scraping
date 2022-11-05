@@ -9,9 +9,12 @@ library(lubridate)
 
 # Function to set up the connection to a Selenium browser for a given engine/
 # port configuration
-setup_browser <- function(engine = "firefox", port = 4571L) {
+setup_browser <- function(engine = "chrome", 
+                          chromever = "107.0.5304.18", 
+                          port = 4571L) {
   driver <- tryCatch({
-    rsDriver(browser = engine, port = port)
+    rsDriver(browser = engine, port = port, 
+             chromever = chromever)
   },
   error = function(cond) {
     return(as.character(cond))
@@ -20,15 +23,16 @@ setup_browser <- function(engine = "firefox", port = 4571L) {
 }
 
 # Function to return a Selenium browser on a new port 
-get_browser <- function(engine = "firefox", 
-                        # waiting_time = 30, 
+get_browser <- function(engine = "chrome", 
+                        chromever = "107.0.5304.18",
+                        waiting_time = 10,
                         max_tries = 20) {
   # Get the connection to the browser
-  port <- 4571L
-  # print(glue("Waiting for {waiting_time} seconds for startup..."))
+  port <- 4671L
+  print(glue("Waiting for {waiting_time} seconds for startup..."))
   try_num <- 1
   driver <- setup_browser(engine = engine, port = port)
-  # Sys.sleep(waiting_time)
+  Sys.sleep(waiting_time)
   # If the port is already in use, take the next one until it works
   if (is.character(driver)) {
     print(glue("Problem encountered: {driver}"))
@@ -46,7 +50,7 @@ get_browser <- function(engine = "firefox",
               # Successful connection, break
               try_next_port <- FALSE
             }
-            # Sys.sleep(waiting_time)
+            Sys.sleep(waiting_time)
           } else {
             # Other error than port error
             print(glue("New error showed up: {driver}"))

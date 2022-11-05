@@ -10,8 +10,6 @@ library(lubridate)
 ## "120983100000" and can be used to directly access a product detail page:
 ## https://www.migros.ch/de/product/120983100000
 
-# https://thatdatatho.com/tutorial-web-scraping-rselenium/
-
 # Load functions to set up Selenium browser and navigate with it
 source(here("selenium_functions.R"))
 
